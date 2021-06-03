@@ -1,13 +1,8 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Seq2SeqLearn
 {
-
     [Serializable]
     public class Encoder
     {
@@ -16,38 +11,38 @@ namespace Seq2SeqLearn
         public int dim { get; set; }
         public int depth { get; set; }
 
-        public Encoder(int hdim, int dim, int depth )
+        public Encoder(int hdim, int dim, int depth)
         {
-             encoders.Add(new LSTMCell(hdim, dim));
- 
+            encoders.Add(new LSTMCell(hdim, dim));
+
             //for (int i = 1; i < depth; i++)
             //{
             //   encoders.Add(new LSTMCell(hdim, hdim));
- 
+
             //}
             this.hdim = hdim;
             this.dim = dim;
             this.depth = depth;
         }
+
         public void Reset()
         {
             foreach (var item in encoders)
             {
                 item.Reset();
             }
-
         }
 
         public WeightMatrix Encode(WeightMatrix V, ComputeGraph g)
         {
             foreach (var encoder in encoders)
             {
-                var e = encoder.Step(V, g); 
-                    V = e; 
-  
+                var e = encoder.Step(V, g);
+                V = e;
             }
             return V;
         }
+
         public List<WeightMatrix> Encode2(WeightMatrix V, ComputeGraph g)
         {
             List<WeightMatrix> res = new List<WeightMatrix>();
@@ -66,15 +61,10 @@ namespace Seq2SeqLearn
 
             foreach (var item in encoders)
             {
-
                 response.AddRange(item.getParams());
-
             }
-
-
 
             return response;
         }
-
     }
 }

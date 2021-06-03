@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Seq2SeqLearn
 {
-
     public class SingularValueDecomposition
     {
-
         /* ------------------------
            Class variables
          * ------------------------ */
@@ -42,7 +36,6 @@ namespace Seq2SeqLearn
 
         public SingularValueDecomposition(double[][] Arg)
         {
-
             // Derived from LINPACK code.
             // Initialize.
             double[][] A = Arg;
@@ -65,7 +58,7 @@ namespace Seq2SeqLearn
             Boolean wantu = true;
             Boolean wantv = true;
             // Reduce A to bidiagonal form, storing the diagonal elements
-            // in s and the super-diagonal elements in e. 
+            // in s and the super-diagonal elements in e.
             int nct = Math.Min(m - 1, n);
             int nrt = Math.Max(0, Math.Min(n - 2, m));
             for (int k = 0; k < Math.Max(nct, nrt); k++)
@@ -98,7 +91,7 @@ namespace Seq2SeqLearn
                 {
                     if ((k < nct) & (s[k] != 0.0))
                     {
-                        // Apply the transformation. 
+                        // Apply the transformation.
                         double t = 0;
                         for (int i = k; i < m; i++)
                         {
@@ -111,13 +104,13 @@ namespace Seq2SeqLearn
                         }
                     }
                     // Place the k-th row of A into e for the
-                    // subsequent calculation of the row transformation. 
+                    // subsequent calculation of the row transformation.
                     e[j] = A[k][j];
                 }
                 if (wantu & (k < nct))
                 {
                     // Place the transformation in U for subsequent back
-                    // multiplication. 
+                    // multiplication.
                     for (int i = k; i < m; i++)
                     {
                         U[i][k] = A[i][k];
@@ -148,7 +141,7 @@ namespace Seq2SeqLearn
                     e[k] = -e[k];
                     if ((k + 1 < m) & (e[k] != 0.0))
                     {
-                        // Apply the transformation. 
+                        // Apply the transformation.
                         for (int i = k + 1; i < m; i++)
                         {
                             work[i] = 0.0;
@@ -172,7 +165,7 @@ namespace Seq2SeqLearn
                     if (wantv)
                     {
                         // Place the transformation in V for subsequent
-                        // back multiplication. 
+                        // back multiplication.
                         for (int i = k + 1; i < n; i++)
                         {
                             V[i][k] = e[i];
@@ -352,7 +345,6 @@ namespace Seq2SeqLearn
 
                 switch (kase)
                 {
-
                     // Deflate negligible s(p).
 
                     case 1:
@@ -414,7 +406,6 @@ namespace Seq2SeqLearn
 
                     case 3:
                         {
-
                             // Calculate the shift.
 
                             double scale = Math.Max(Math.Max(Math.Max(Math.Max(
@@ -491,7 +482,6 @@ namespace Seq2SeqLearn
 
                     case 4:
                         {
-
                             // Make the singular values positive.
 
                             if (s[k] <= 0.0)

@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Seq2SeqLearn
 {
     [Serializable]
     public static class RandomGenerator
     {
-
         public static bool Return_V { get; set; }
         public static double V_Val { get; set; }
 
         private static Random random = new Random(3);
+
         public static double GaussRandom()
         {
             if (Return_V)
@@ -34,22 +30,17 @@ namespace Seq2SeqLearn
 
         public static double FloatRandom(double a, double b)
         {
-
             return random.NextDouble() * (b - a) + a;
-        
         }
 
         public static double IntegarRandom(double a, double b)
-        { 
-            return Math.Floor(  random.NextDouble() * (b - a) + a); 
+        {
+            return Math.Floor(random.NextDouble() * (b - a) + a);
         }
+
         public static double NormalRandom(double mu, double std)
         {
             return mu + GaussRandom() * std;
         }
-
-            
-
     }
-     
 }

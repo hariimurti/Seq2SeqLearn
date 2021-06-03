@@ -1,16 +1,9 @@
-﻿ 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace Seq2SeqLearn
 {
-
     public class EigenvalueDecomposition
     {
-
         /* ------------------------
            Class variables
          * ------------------------ */
@@ -53,7 +46,6 @@ namespace Seq2SeqLearn
 
         private void tred2()
         {
-
             //  This is derived from the Algol procedures tred2 by
             //  Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
             //  Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
@@ -68,7 +60,6 @@ namespace Seq2SeqLearn
 
             for (int i = n - 1; i > 0; i--)
             {
-
                 // Scale to avoid under/overflow.
 
                 double scale = 0.0;
@@ -89,7 +80,6 @@ namespace Seq2SeqLearn
                 }
                 else
                 {
-
                     // Generate Householder vector.
 
                     for (int k = 0; k < i; k++)
@@ -195,7 +185,6 @@ namespace Seq2SeqLearn
 
         private void tql2()
         {
-
             //  This is derived from the Algol procedures tql2, by
             //  Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
             //  Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
@@ -212,7 +201,6 @@ namespace Seq2SeqLearn
             double eps = Math.Pow(2.0, -52.0);
             for (int l = 0; l < n; l++)
             {
-
                 // Find small subdiagonal element
 
                 tst1 = Math.Max(tst1, Math.Abs(d[l]) + Math.Abs(e[l]));
@@ -292,7 +280,6 @@ namespace Seq2SeqLearn
                         d[l] = c * p;
 
                         // Check for convergence.
-
                     } while (Math.Abs(e[l]) > eps * tst1);
                 }
                 d[l] = d[l] + f;
@@ -331,7 +318,6 @@ namespace Seq2SeqLearn
 
         private void orthes()
         {
-
             //  This is derived from the Algol procedures orthes and ortran,
             //  by Martin and Wilkinson, Handbook for Auto. Comp.,
             //  Vol.ii-Linear Algebra, and the corresponding
@@ -342,7 +328,6 @@ namespace Seq2SeqLearn
 
             for (int m = low + 1; m <= high - 1; m++)
             {
-
                 // Scale column.
 
                 double scale = 0.0;
@@ -352,7 +337,6 @@ namespace Seq2SeqLearn
                 }
                 if (scale != 0.0)
                 {
-
                     // Compute Householder transformation.
 
                     double h = 0.0;
@@ -440,10 +424,10 @@ namespace Seq2SeqLearn
             }
         }
 
-
         // Complex scalar division.
 
         private double cdivr, cdivi;
+
         private void cdiv(double xr, double xi, double yr, double yi)
         {
             double r, d;
@@ -463,12 +447,10 @@ namespace Seq2SeqLearn
             }
         }
 
-
         // Nonsymmetric reduction from Hessenberg to real Schur form.
 
         private void hqr2()
         {
-
             //  This is derived from the Algol procedure hqr2,
             //  by Martin and Wilkinson, Handbook for Auto. Comp.,
             //  Vol.ii-Linear Algebra, and the corresponding
@@ -505,7 +487,6 @@ namespace Seq2SeqLearn
             int iter = 0;
             while (n >= low)
             {
-
                 // Look for single small sub-diagonal element
 
                 int l = n;
@@ -535,7 +516,6 @@ namespace Seq2SeqLearn
                     iter = 0;
 
                     // Two roots found
-
                 }
                 else if (l == n - 1)
                 {
@@ -603,7 +583,6 @@ namespace Seq2SeqLearn
                         }
 
                         // Complex pair
-
                     }
                     else
                     {
@@ -616,11 +595,9 @@ namespace Seq2SeqLearn
                     iter = 0;
 
                     // No convergence yet
-
                 }
                 else
                 {
-
                     // Form shift
 
                     x = H[n][n];
@@ -844,7 +821,6 @@ namespace Seq2SeqLearn
                                 }
 
                                 // Solve real equations
-
                             }
                             else
                             {
@@ -877,7 +853,6 @@ namespace Seq2SeqLearn
                     }
 
                     // Complex vector
-
                 }
                 else if (q < 0)
                 {
@@ -927,7 +902,6 @@ namespace Seq2SeqLearn
                             }
                             else
                             {
-
                                 // Solve complex equations
 
                                 x = H[i][i + 1];
@@ -1000,7 +974,6 @@ namespace Seq2SeqLearn
             }
         }
 
-
         /* ------------------------
            Constructor
          * ------------------------ */
@@ -1046,7 +1019,6 @@ namespace Seq2SeqLearn
 
                 // Diagonalize.
                 tql2();
-
             }
             else
             {
@@ -1138,7 +1110,6 @@ namespace Seq2SeqLearn
 
     public static class MathTools
     {
-
         /** sqrt(a^2 + b^2) without under/overflow. **/
 
         public static double hypot(double a, double b)
@@ -1161,5 +1132,4 @@ namespace Seq2SeqLearn
             return r;
         }
     }
-
 }
