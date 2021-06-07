@@ -156,11 +156,6 @@ namespace Seq2SeqLearn
                 var eOutput2 = ReversEncoder.Encode(x2, g);
                 encoded.Add(g.concatColumns(eOutput, eOutput2));
             }
-
-            //if (UseDropout)
-            //{
-            //    encoded = g.Dropout(encoded, 0.2);
-            //}
         }
 
         private double DecodeOutput(List<string> OutputSentence, ComputeGraph g, double cost, List<WeightMatrix> encoded)

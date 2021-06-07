@@ -156,11 +156,6 @@ namespace Seq2SeqLearn
                 var eOutput2 = ReversEncoder.Encode(x2, g);
                 encoded.Add(g.concatColumns(eOutput, eOutput2));
             }
-
-            //if (UseDropout)
-            //{
-            //    encoded = g.Dropout(encoded, 0.2);
-            //}
         }
 
         private double DecodeOutput(List<string> OutputSentence, ComputeGraph g, double cost, List<WeightMatrix> encoded)
@@ -247,13 +242,6 @@ namespace Seq2SeqLearn
                 encoded.Add(d);
             }
 
-            //if (UseDropout)
-            //{
-            //    for (int i = 0; i < encoded.Weight.Length; i++)
-            //    {
-            //        encoded.Weight[i] *= 0.2;
-            //    }
-            //}
             var ix_input = 1;
             while (true)
             {
