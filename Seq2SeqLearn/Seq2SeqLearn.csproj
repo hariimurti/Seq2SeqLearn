@@ -58,6 +58,7 @@
     <Compile Include="Decoder.cs" />
     <Compile Include="Seq2Seq.cs" />
     <Compile Include="CostEventArg.cs" />
+    <Compile Include="Tools\FileBinary.cs" />
     <Compile Include="Encoder.cs" />
     <Compile Include="LSTMCell.cs" />
     <Compile Include="LSTMAttentionDecoderCell.cs" />
