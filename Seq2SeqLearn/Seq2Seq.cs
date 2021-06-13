@@ -80,16 +80,117 @@ namespace Seq2SeqLearn
             }
         }
 
-        private void OneHotEncoding(List<List<string>> _input, List<List<string>> _output)
+        public void Train(int trainingEpoch)
+        {
+            for (int ep = 0; ep < trainingEpoch; ep++)
+            {
+                Random r = new Random();
+                for (int itr = 0; itr < io.Input.Count; itr++)
+                {
+                    // sample sentence from data
+                    List<string> OutputSentence;
+                    ComputeGraph g;
+                    double cost;
+                    List<WeightMatrix> encoded = new List<WeightMatrix>();
+                    EncodeInput(r, out OutputSentence, out g, out cost, encoded);
+                    cost = DecodeOutput(OutputSentence, g, cost, encoded);
+
+                    g.backward();
+                    UpdateParameters();
+                    ResetCoders();
+                    if (IterationDone != null)
+                    {
+                        IterationDone(this, new CostEventArg()
+                        {
+                            Cost = cost / OutputSentence.Count
+                            ,
+                            Iteration = ep
+                        });
+                    }
+                }
+            }
+        }
+
+        public List<string> Predict(List<string> inputSeq)
+        {
+            ResetCoders();
+
+            List<string> result = new List<string>();
+
+            var G2 = new ComputeGraph(false);
+
+            List<string> revseq = inputSeq.ToList();
+            revseq.Reverse();
+            List<WeightMatrix> encoded = new List<WeightMatrix>();
+            for (int i = 0; i < inputSeq.Count; i++)
+            {
+                int ix = wordToIndex[inputSeq[i]];
+                int ix2 = wordToIndex[revseq[i]];
+                var x2 = G2.PeekRow(model.Embedding, ix);
+                var o = model.encoder.Encode(x2, G2);
+                var x3 = G2.PeekRow(model.Embedding, ix2);
+                var eOutput2 = model.reversEncoder.Encode(x3, G2);
+
+                var d = G2.concatColumns(o, eOutput2);
+
+                encoded.Add(d);
+            }
+
+            var ix_input = 1;
+            while (true)
+            {
+                var x = G2.PeekRow(model.Embedding, ix_input);
+                var eOutput = model.decoder.Decode(x, encoded, G2);
+                if (model.UseDropout)
+                {
+                    for (int i = 0; i < eOutput.Weight.Length; i++)
+                    {
+                        eOutput.Weight[i] *= 0.2;
+                    }
+                }
+                var o = G2.add(
+                       G2.mul(eOutput, model.Whd), model.Bd);
+                if (model.UseDropout)
+                {
+                    for (int i = 0; i < o.Weight.Length; i++)
+                    {
+                        o.Weight[i] *= 0.2;
+                    }
+                }
+                var probs = G2.SoftmaxWithCrossEntropy(o);
+                var maxv = probs.Weight[0];
+                var maxi = 0;
+                for (int i = 1; i < probs.Weight.Length; i++)
+                {
+                    if (probs.Weight[i] > maxv)
+                    {
+                        maxv = probs.Weight[i];
+                        maxi = i;
+                    }
+                }
+                var pred = maxi;
+
+                if (pred == 0) break; // END token predicted, break out
+
+                if (result.Count > MaxPredictionWord) { break; } // something is wrong
+                var letter2 = indexToWord[pred];
+                result.Add(letter2);
+                ix_input = pred;
+            }
+
+            return result;
+        }
+
+        private void OneHotEncoding(List<List<string>> input, List<List<string>> output)
         {
             // count up all words
             Dictionary<string, int> d = new Dictionary<string, int>();
             wordToIndex = new Dictionary<string, int>();
             indexToWord = new Dictionary<int, string>();
             vocab = new List<string>();
-            for (int j = 0, n2 = _input.Count; j < n2; j++)
+            for (int j = 0, n2 = input.Count; j < n2; j++)
             {
-                var item = _input[j];
+                var item = input[j];
                 for (int i = 0, n = item.Count; i < n; i++)
                 {
                     var txti = item[i];
@@ -97,7 +198,7 @@ namespace Seq2SeqLearn
                     else { d.Add(txti, 1); }
                 }
 
-                var item2 = _output[j];
+                var item2 = output[j];
                 for (int i = 0, n = item2.Count; i < n; i++)
                 {
                     var txti = item2[i];
@@ -123,38 +224,7 @@ namespace Seq2SeqLearn
             }
         }
 
-        public void Train(int trainingEpoch)
-        {
-            for (int ep = 0; ep < trainingEpoch; ep++)
-            {
-                Random r = new Random();
-                for (int itr = 0; itr < io.Input.Count; itr++)
-                {
-                    // sample sentence from data
-                    List<string> OutputSentence;
-                    ComputeGraph g;
-                    double cost;
-                    List<WeightMatrix> encoded = new List<WeightMatrix>();
-                    Encode(r, out OutputSentence, out g, out cost, encoded);
-                    cost = DecodeOutput(OutputSentence, g, cost, encoded);
-
-                    g.backward();
-                    UpdateParameters();
-                    Reset();
-                    if (IterationDone != null)
-                    {
-                        IterationDone(this, new CostEventArg()
-                        {
-                            Cost = cost / OutputSentence.Count
-                            ,
-                            Iteration = ep
-                        });
-                    }
-                }
-            }
-        }
-
-        private void Encode(Random r, out List<string> OutputSentence, out ComputeGraph g, out double cost, List<WeightMatrix> encoded)
+        private void EncodeInput(Random r, out List<string> OutputSentence, out ComputeGraph g, out double cost, List<WeightMatrix> encoded)
         {
             var sentIndex = r.Next(0, io.Input.Count);
             var inputSentence = io.Input[sentIndex];
@@ -227,83 +297,11 @@ namespace Seq2SeqLearn
             solver.setp(updated, LearningRate, RegC, ClipVal);
         }
 
-        private void Reset()
+        private void ResetCoders()
         {
             model.encoder.Reset();
             model.reversEncoder.Reset();
             model.decoder.Reset();
-        }
-
-        public List<string> Predict(List<string> inputSeq)
-        {
-            model.reversEncoder.Reset();
-            model.encoder.Reset();
-            model.decoder.Reset();
-
-            List<string> result = new List<string>();
-
-            var G2 = new ComputeGraph(false);
-
-            List<string> revseq = inputSeq.ToList();
-            revseq.Reverse();
-            List<WeightMatrix> encoded = new List<WeightMatrix>();
-            for (int i = 0; i < inputSeq.Count; i++)
-            {
-                int ix = wordToIndex[inputSeq[i]];
-                int ix2 = wordToIndex[revseq[i]];
-                var x2 = G2.PeekRow(model.Embedding, ix);
-                var o = model.encoder.Encode(x2, G2);
-                var x3 = G2.PeekRow(model.Embedding, ix2);
-                var eOutput2 = model.reversEncoder.Encode(x3, G2);
-
-                var d = G2.concatColumns(o, eOutput2);
-
-                encoded.Add(d);
-            }
-
-            var ix_input = 1;
-            while (true)
-            {
-                var x = G2.PeekRow(model.Embedding, ix_input);
-                var eOutput = model.decoder.Decode(x, encoded, G2);
-                if (model.UseDropout)
-                {
-                    for (int i = 0; i < eOutput.Weight.Length; i++)
-                    {
-                        eOutput.Weight[i] *= 0.2;
-                    }
-                }
-                var o = G2.add(
-                       G2.mul(eOutput, model.Whd), model.Bd);
-                if (model.UseDropout)
-                {
-                    for (int i = 0; i < o.Weight.Length; i++)
-                    {
-                        o.Weight[i] *= 0.2;
-                    }
-                }
-                var probs = G2.SoftmaxWithCrossEntropy(o);
-                var maxv = probs.Weight[0];
-                var maxi = 0;
-                for (int i = 1; i < probs.Weight.Length; i++)
-                {
-                    if (probs.Weight[i] > maxv)
-                    {
-                        maxv = probs.Weight[i];
-                        maxi = i;
-                    }
-                }
-                var pred = maxi;
-
-                if (pred == 0) break; // END token predicted, break out
-
-                if (result.Count > MaxPredictionWord) { break; } // something is wrong
-                var letter2 = indexToWord[pred];
-                result.Add(letter2);
-                ix_input = pred;
-            }
-
-            return result;
         }
 
         public void Save()
