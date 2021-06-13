@@ -87,31 +87,31 @@ namespace Seq2SeqLearn
             }
         }
 
-        public TrainingData GetTrainingData()
+        public TrainingInfo GetTrainingInfo()
         {
-            return model.Training;
+            return model.Info;
         }
 
         private void Training(int trainingEpoch, CancellationToken token)
         {
             if (io.Input == null || io.Output == null) throw new Exception("The data is not ready!");
             if (trainingEpoch < 1) throw new Exception("Training epoch must be greater than 0!");
-            if (model.Training.IsComplete())
+            if (model.Info.IsComplete())
             {
-                OnComplete?.Invoke(new CompleteEventArgs(model.Training, false));
+                OnComplete?.Invoke(new CompleteEventArgs(model.Info, false));
                 return;
             }
 
             // set training epoch
-            model.Training.TotalEpoch = trainingEpoch;
-            model.Training.TotalData = trainingEpoch * io.Input.Count;
+            model.Info.TotalEpoch = trainingEpoch;
+            model.Info.TotalData = trainingEpoch * io.Input.Count;
 
             // send resume event
-            if (model.Training.TrainedData > 0) OnResume?.Invoke(new ResumeEventArgs(model.Training));
+            if (model.Info.TrainedData > 0) OnResume?.Invoke(new ResumeEventArgs(model.Info));
             
             for (int ep = 0; ep < trainingEpoch; ep++)
             {
-                if (ep < model.Training.NextEpoch) continue;
+                if (ep < model.Info.NextEpoch) continue;
 
                 Random r = new Random();
                 for (int itr = 0; itr < io.Input.Count; itr++)
@@ -126,16 +126,16 @@ namespace Seq2SeqLearn
                     ResetCoders();
 
                     // calc trained data
-                    model.Training.TrainedData = (ep * io.Input.Count) + itr + 1;
-                    OnProgress?.Invoke(new ProgressEventArgs(ep + 1, cost / outputSentence.Count, model.Training));
+                    model.Info.TrainedData = (ep * io.Input.Count) + itr + 1;
+                    OnProgress?.Invoke(new ProgressEventArgs(ep + 1, cost / outputSentence.Count, model.Info));
 
                     // break if cancelled
                     if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
                 }
 
                 // update training data
-                model.Training.NextEpoch = ep + 1;
-                model.Training.LastTime = DateTime.Now;
+                model.Info.NextEpoch = ep + 1;
+                model.Info.LastTime = DateTime.Now;
 
                 // save data
                 binModel.Write(model);
@@ -145,7 +145,7 @@ namespace Seq2SeqLearn
                 if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
             }
 
-            OnComplete?.Invoke(new CompleteEventArgs(model.Training));
+            OnComplete?.Invoke(new CompleteEventArgs(model.Info));
         }
 
         public async void StartTraining(int trainingEpoch)
@@ -159,11 +159,11 @@ namespace Seq2SeqLearn
             }
             catch (OperationCanceledException e)
             {
-                OnStop?.Invoke(new StopEventArgs(model.Training, e.Message, false));
+                OnStop?.Invoke(new StopEventArgs(model.Info, e.Message, false));
             }
             catch (Exception e)
             {
-                OnStop?.Invoke(new StopEventArgs(model.Training, e.Message, true));
+                OnStop?.Invoke(new StopEventArgs(model.Info, e.Message, true));
             }
             finally
             {
@@ -180,7 +180,7 @@ namespace Seq2SeqLearn
         public List<string> Predict(List<string> inputSentence)
         {
             if (io.Input == null || io.Output == null) throw new Exception("The data is not ready!");
-            if (model.Training.TrainedData == 0) throw new Exception("Train the data first!");
+            if (model.Info.TrainedData == 0) throw new Exception("Train the data first!");
 
             ResetCoders();
 

@@ -9,12 +9,12 @@ namespace Seq2SeqLearn.Events
         public int TrainedData { get; }
         public int TotalData { get; }
 
-        public ProgressEventArgs(int ep, double cost, TrainingData data)
+        public ProgressEventArgs(int ep, double cost, TrainingInfo info)
         {
             Epoch = ep;
             Cost = cost;
-            TrainedData = data.TrainedData;
-            TotalData = data.TotalData;
+            TrainedData = info.TrainedData;
+            TotalData = info.TotalData;
         }
 
         public int InPercent()

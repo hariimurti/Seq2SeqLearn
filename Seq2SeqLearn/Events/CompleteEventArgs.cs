@@ -8,10 +8,10 @@ namespace Seq2SeqLearn.Events
         public DateTime LastTime { get; }
         public bool StartOver { get; }
 
-        public CompleteEventArgs(TrainingData data, bool startover = true)
+        public CompleteEventArgs(TrainingInfo info, bool startover = true)
         {
-            TrainedData = data.TrainedData;
-            LastTime = data.LastTime;
+            TrainedData = info.TrainedData;
+            LastTime = info.LastTime;
             StartOver = startover;
         }
     }

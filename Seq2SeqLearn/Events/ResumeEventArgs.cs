@@ -10,13 +10,13 @@ namespace Seq2SeqLearn.Events
         public int TotalData { get; }
         public DateTime LastTime { get; }
 
-        public ResumeEventArgs(TrainingData data)
+        public ResumeEventArgs(TrainingInfo info)
         {
-            StartEpoch = data.NextEpoch;
-            EndEpoch = data.TotalEpoch;
-            TrainedData = data.TrainedData;
-            TotalData = data.TotalData;
-            LastTime = data.LastTime;
+            StartEpoch = info.NextEpoch;
+            EndEpoch = info.TotalEpoch;
+            TrainedData = info.TrainedData;
+            TotalData = info.TotalData;
+            LastTime = info.LastTime;
         }
 
         public int InPercent()

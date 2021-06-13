@@ -19,17 +19,17 @@ namespace Seq2SeqLearn
         public WeightMatrix Bd { get; set; }
         public int Depth { get; set; }
 
-        // training data
-        public TrainingData Training { get; set; }
+        // training info
+        public TrainingInfo Info { get; set; }
 
         public ModelAttentionData()
         {
-            Training = new TrainingData();
+            Info = new TrainingInfo();
         }
     }
 
     [Serializable]
-    public class TrainingData
+    public class TrainingInfo
     {
         public int NextEpoch { get; set; }
         public int TotalEpoch { get; set; }

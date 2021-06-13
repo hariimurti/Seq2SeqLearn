@@ -9,10 +9,10 @@ namespace Seq2SeqLearn.Events
         public string Message { get; }
         public bool IsError { get; }
 
-        public StopEventArgs(TrainingData data, string msg, bool isError)
+        public StopEventArgs(TrainingInfo info, string msg, bool isError)
         {
-            TrainedData = data.TrainedData;
-            TotalData = data.TotalData;
+            TrainedData = info.TrainedData;
+            TotalData = info.TotalData;
             Message = msg;
             IsError = isError;
         }
