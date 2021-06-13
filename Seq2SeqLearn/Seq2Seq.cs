@@ -87,6 +87,11 @@ namespace Seq2SeqLearn
             }
         }
 
+        public TrainingData GetTrainingData()
+        {
+            return model.Training;
+        }
+
         private void Training(int trainingEpoch, CancellationToken token)
         {
             if (io.Input == null || io.Output == null) throw new Exception("The data is not ready!");
