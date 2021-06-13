@@ -19,16 +19,15 @@ namespace Seq2SeqLearn
         private Dictionary<string, int> wordToIndex = new Dictionary<string, int>();
         private Dictionary<int, string> indexToWord = new Dictionary<int, string>();
         private List<string> vocab = new List<string>();
-        private List<List<string>> InputSequences;
-        private List<List<string>> OutputSequences;
-
+        
         private Optimizer solver;
         private ModelAttentionData model = new ModelAttentionData();
+        private IOSequences io = new IOSequences();
 
         public Seq2Seq(int inputSize, int hiddenSize, int depth, List<List<string>> input, List<List<string>> output, bool useDropout)
         {
-            this.InputSequences = input;
-            this.OutputSequences = output;
+            io.Input = input;
+            io.Output = output;
             OneHotEncoding(input, output);
 
             solver = new Optimizer();
@@ -93,7 +92,7 @@ namespace Seq2SeqLearn
             for (int ep = 0; ep < trainingEpoch; ep++)
             {
                 Random r = new Random();
-                for (int itr = 0; itr < InputSequences.Count; itr++)
+                for (int itr = 0; itr < io.Input.Count; itr++)
                 {
                     // sample sentence from data
                     List<string> OutputSentence;
@@ -121,11 +120,11 @@ namespace Seq2SeqLearn
 
         private void Encode(Random r, out List<string> OutputSentence, out ComputeGraph g, out double cost, List<WeightMatrix> encoded)
         {
-            var sentIndex = r.Next(0, InputSequences.Count);
-            var inputSentence = InputSequences[sentIndex];
-            var reversSentence = InputSequences[sentIndex].ToList();
+            var sentIndex = r.Next(0, io.Input.Count);
+            var inputSentence = io.Input[sentIndex];
+            var reversSentence = io.Input[sentIndex].ToList();
             reversSentence.Reverse();
-            OutputSentence = OutputSequences[sentIndex];
+            OutputSentence = io.Output[sentIndex];
             g = new ComputeGraph();
 
             cost = 0.0;
@@ -273,14 +272,20 @@ namespace Seq2SeqLearn
 
         public void Save()
         {
-            var bin = new FileBinary("Seq2SeqModel.bin");
-            bin.Write(model);
+            var binIO = new FileBinary("Seq2SeqIO.bin");
+            binIO.Write(io);
+
+            var binModel = new FileBinary("Seq2SeqModel.bin");
+            binModel.Write(model);
         }
 
         public void Load()
         {
-            var bin = new FileBinary("Seq2SeqModel.bin");
-            model = bin.Read() as ModelAttentionData;
+            var binIO = new FileBinary("Seq2SeqIO.bin");
+            io = binIO.Read() as IOSequences;
+
+            var binModel = new FileBinary("Seq2SeqModel.bin");
+            model = binModel.Read() as ModelAttentionData;
         }
     }
 }
