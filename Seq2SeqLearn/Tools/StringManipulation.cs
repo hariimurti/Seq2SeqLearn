@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Seq2SeqLearn.Tools
@@ -31,6 +32,16 @@ namespace Seq2SeqLearn.Tools
                 return m.ToString().Replace(m.Groups[1].Value, "");
             });
             return sentence;
+        }
+
+        public static bool AreEqual(this List<List<string>> listOne, List<List<string>> listTwo)
+        {
+            if (listOne.Count != listTwo.Count) return false;
+            for (int i = 0; i < listOne.Count; i++)
+            {
+                if (!listOne[i].SequenceEqual(listTwo[i])) return false;
+            }
+            return true;
         }
     }
 }
