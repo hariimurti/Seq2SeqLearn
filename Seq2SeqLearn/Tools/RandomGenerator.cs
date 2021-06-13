@@ -5,8 +5,8 @@ namespace Seq2SeqLearn
     [Serializable]
     public static class RandomGenerator
     {
-        public static bool Return_V { get; set; }
-        public static double V_Val { get; set; }
+        private static bool Return_V { get; set; }
+        private static double V_Val { get; set; }
 
         private static Random random = new Random(3);
 

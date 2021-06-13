@@ -5,8 +5,8 @@ namespace Seq2SeqLearn
 {
     public class Optimizer
     {
-        public double decay_rate = 0.999;
-        public double smooth_eps = 1e-8;
+        private double decay_rate = 0.999;
+        private double smooth_eps = 1e-8;
         private List<WeightMatrix> step_cache = new List<WeightMatrix>();
 
         public void setp(List<WeightMatrix> model, double step_size, double regc, double clipval)

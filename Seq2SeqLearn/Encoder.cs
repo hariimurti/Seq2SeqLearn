@@ -6,10 +6,10 @@ namespace Seq2SeqLearn
     [Serializable]
     public class Encoder
     {
-        public List<LSTMCell> encoders = new List<LSTMCell>();
-        public int hdim { get; set; }
-        public int dim { get; set; }
-        public int depth { get; set; }
+        private List<LSTMCell> encoders = new List<LSTMCell>();
+        private int hdim { get; set; }
+        private int dim { get; set; }
+        private int depth { get; set; }
 
         public Encoder(int hdim, int dim, int depth)
         {

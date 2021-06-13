@@ -6,13 +6,13 @@ namespace Seq2SeqLearn
     [Serializable]
     public class AttentionUnit
     {
-        public WeightMatrix V { get; set; }
-        public WeightMatrix Ua { get; set; }
-        public WeightMatrix bUa { get; set; }
-        public WeightMatrix Wa { get; set; }
-        public WeightMatrix bWa { get; set; }
-        public int MaxIndex { get; set; }
-        public int batchSize { get; set; }
+        private WeightMatrix V { get; set; }
+        private WeightMatrix Ua { get; set; }
+        private WeightMatrix bUa { get; set; }
+        private WeightMatrix Wa { get; set; }
+        private WeightMatrix bWa { get; set; }
+        private int MaxIndex { get; set; }
+        private int batchSize { get; set; }
 
         public AttentionUnit()
         {
