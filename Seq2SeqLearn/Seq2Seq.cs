@@ -84,6 +84,14 @@ namespace Seq2SeqLearn
 
         public void Training(int trainingEpoch)
         {
+            if (io.Input == null || io.Output == null) throw new Exception("The data is not ready!");
+            if (trainingEpoch < 1) throw new Exception("Training epoch must be greater than 0!");
+            if (model.Training.IsComplete())
+            {
+                OnComplete?.Invoke(new CompleteEventArgs(model.Training, false));
+                return;
+            }
+
             // set training epoch
             model.Training.TotalEpoch = trainingEpoch;
             model.Training.TotalData = trainingEpoch * io.Input.Count;
@@ -117,6 +125,9 @@ namespace Seq2SeqLearn
 
         public List<string> Predict(List<string> inputSentence)
         {
+            if (io.Input == null || io.Output == null) throw new Exception("The data is not ready!");
+            if (model.Training.TrainedData == 0) throw new Exception("Train the data first!");
+
             ResetCoders();
 
             var inputReverse = inputSentence.ToList();
@@ -126,16 +137,25 @@ namespace Seq2SeqLearn
             var encoded = new List<WeightMatrix>();
             for (int i = 0; i < inputSentence.Count; i++)
             {
-                int ix1 = wordToIndex[inputSentence[i]];
-                var v1 = g.PeekRow(model.Embedding, ix1);
-                var m1 = model.encoder.Encode(v1, g);
+                try
+                {
+                    int ix1 = wordToIndex[inputSentence[i]];
+                    var v1 = g.PeekRow(model.Embedding, ix1);
+                    var m1 = model.encoder.Encode(v1, g);
 
-                int ix2 = wordToIndex[inputReverse[i]];
-                var v2 = g.PeekRow(model.Embedding, ix2);
-                var m2 = model.reversEncoder.Encode(v2, g);
+                    int ix2 = wordToIndex[inputReverse[i]];
+                    var v2 = g.PeekRow(model.Embedding, ix2);
+                    var m2 = model.reversEncoder.Encode(v2, g);
 
-                encoded.Add(g.concatColumns(m1, m2));
+                    encoded.Add(g.concatColumns(m1, m2));
+                }
+                catch (Exception)
+                {
+                    // exception of words that are not in the dictionary
+                }
             }
+
+            if (encoded.Count == 0) throw new Exception("There are no predictable words in the dictionary.");
 
             var ix_input = 1;
             var outputSentence = new List<string>();
