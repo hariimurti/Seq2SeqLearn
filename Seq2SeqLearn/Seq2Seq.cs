@@ -7,6 +7,17 @@ namespace Seq2SeqLearn
 {
     public class Seq2Seq
     {
+        private IOSequences io = new IOSequences();
+        private readonly FileBinary binIO = new FileBinary("Seq2SeqIO.bin");
+
+        private ModelAttentionData model = new ModelAttentionData();
+        private readonly FileBinary binModel = new FileBinary("Seq2SeqModel.bin");
+
+        private readonly Optimizer solver = new Optimizer();
+        private Dictionary<string, int> wordToIndex = new Dictionary<string, int>();
+        private Dictionary<int, string> indexToWord = new Dictionary<int, string>();
+        private List<string> vocab = new List<string>();
+
         // default values
         public int MaxPredictionWord = 100; // max length of generated sentences
         // optimization  hyperparameters
@@ -16,32 +27,57 @@ namespace Seq2SeqLearn
 
         public event EventHandler IterationDone;
 
-        private Dictionary<string, int> wordToIndex = new Dictionary<string, int>();
-        private Dictionary<int, string> indexToWord = new Dictionary<int, string>();
-        private List<string> vocab = new List<string>();
-        
-        private Optimizer solver;
-        private ModelAttentionData model = new ModelAttentionData();
-        private IOSequences io = new IOSequences();
-
-        public Seq2Seq(int inputSize, int hiddenSize, int depth, List<List<string>> input, List<List<string>> output, bool useDropout)
+        public Seq2Seq()
         {
-            io.Input = input;
-            io.Output = output;
-            OneHotEncoding(input, output);
+            // Load existing data
+            if (!binModel.IsExist() && !binIO.IsExist()) return;
+            if (binModel.Read() is ModelAttentionData model && binIO.Read() is IOSequences io)
+            {
+                this.model = model;
+                this.io = io;
+                OneHotEncoding(io.Input, io.Output);
+            }
+        }
 
-            solver = new Optimizer();
+        public void SetData(int inputSize, int hiddenSize, int depth, List<List<string>> input, List<List<string>> output, bool useDropout)
+        {
+            // IO is changed
+            var isChanged = io.Input?.AreEqual(input) == false || io.Output?.AreEqual(output) == false;
+            // Model is changed
+            if (model.InputSize != inputSize) isChanged = true;
+            if (model.HiddenSize != hiddenSize) isChanged = true;
+            if (model.Depth != depth) isChanged = true;
+            if (model.UseDropout != useDropout) isChanged = true;
 
-            // list of sizes of hidden layers
-            model.InputSize = inputSize; // size of word embeddings.
-            model.HiddenSize = hiddenSize;
-            model.Embedding = new WeightMatrix(vocab.Count + 2, inputSize, true);
-            model.encoder = new Encoder(hiddenSize, inputSize, depth);
-            model.reversEncoder = new Encoder(hiddenSize, inputSize, depth);
-            model.decoder = new AttentionDecoder(hiddenSize, inputSize, depth);
-            model.Whd = new WeightMatrix(hiddenSize, vocab.Count + 2, true);
-            model.Bd = new WeightMatrix(1, vocab.Count + 2, 0);
-            model.Depth = depth;
+            if (isChanged)
+            {
+                io = new IOSequences
+                {
+                    Input = input,
+                    Output = output
+                };
+                OneHotEncoding(input, output);
+
+                model = new ModelAttentionData
+                {
+                    InputSize = inputSize,
+                    HiddenSize = hiddenSize,
+
+                    Embedding = new WeightMatrix(vocab.Count + 2, inputSize, true),
+                    encoder = new Encoder(hiddenSize, inputSize, depth),
+                    reversEncoder = new Encoder(hiddenSize, inputSize, depth),
+                    decoder = new AttentionDecoder(hiddenSize, inputSize, depth),
+                    UseDropout = useDropout,
+
+                    Whd = new WeightMatrix(hiddenSize, vocab.Count + 2, true),
+                    Bd = new WeightMatrix(1, vocab.Count + 2, 0),
+                    Depth = depth
+                };
+
+                // delete existing trained model
+                binIO.Delete();
+                binModel.Delete();
+            }
         }
 
         private void OneHotEncoding(List<List<string>> _input, List<List<string>> _output)
@@ -277,15 +313,6 @@ namespace Seq2SeqLearn
 
             var binModel = new FileBinary("Seq2SeqModel.bin");
             binModel.Write(model);
-        }
-
-        public void Load()
-        {
-            var binIO = new FileBinary("Seq2SeqIO.bin");
-            io = binIO.Read() as IOSequences;
-
-            var binModel = new FileBinary("Seq2SeqModel.bin");
-            model = binModel.Read() as ModelAttentionData;
         }
     }
 }
