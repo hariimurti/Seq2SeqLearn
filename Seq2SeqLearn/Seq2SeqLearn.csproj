@@ -56,6 +56,10 @@
     <Compile Include="AttentionUnit.cs" />
     <Compile Include="AttentionDecoder.cs" />
     <Compile Include="Decoder.cs" />
+    <Compile Include="Events\CompleteEventArgs.cs" />
+    <Compile Include="Events\ProgressEventArgs.cs" />
+    <Compile Include="Events\ResumeEventArgs.cs" />
+    <Compile Include="Events\StopEventArgs.cs" />
     <Compile Include="IOSequences.cs" />
     <Compile Include="ModelAttentionData.cs" />
     <Compile Include="Seq2Seq.cs" />
