@@ -18,6 +18,14 @@ namespace Seq2SeqLearn
         public WeightMatrix Whd { get; set; }
         public WeightMatrix Bd { get; set; }
         public int Depth { get; set; }
+
+        // training data
+        public TrainingData Training { get; set; }
+
+        public ModelAttentionData()
+        {
+            Training = new TrainingData();
+        }
     }
 
     [Serializable]

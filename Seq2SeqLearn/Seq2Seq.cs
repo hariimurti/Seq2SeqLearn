@@ -1,4 +1,5 @@
-﻿using Seq2SeqLearn.Tools;
+﻿using Seq2SeqLearn.Events;
+using Seq2SeqLearn.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,8 @@ namespace Seq2SeqLearn
         public double LearningRate = 0.001; // learning rate
         public double ClipVal = 5.0; // clip gradients at this value
 
-        public event EventHandler IterationDone;
+        public event Action<ProgressEventArgs> OnProgress;
+        public event Action<CompleteEventArgs> OnComplete;
 
         public Seq2Seq()
         {
@@ -80,35 +82,37 @@ namespace Seq2SeqLearn
             }
         }
 
-        public void Train(int trainingEpoch)
+        public void Training(int trainingEpoch)
         {
+            // set training epoch
+            model.Training.TotalEpoch = trainingEpoch;
+            model.Training.TotalData = trainingEpoch * io.Input.Count;
+
             for (int ep = 0; ep < trainingEpoch; ep++)
             {
                 Random r = new Random();
                 for (int itr = 0; itr < io.Input.Count; itr++)
                 {
                     // sample sentence from data
-                    List<string> OutputSentence;
-                    ComputeGraph g;
-                    double cost;
                     List<WeightMatrix> encoded = new List<WeightMatrix>();
-                    EncodeInput(r, out OutputSentence, out g, out cost, encoded);
-                    cost = DecodeOutput(OutputSentence, g, cost, encoded);
+                    EncodeInput(r, out List<string> outputSentence, out ComputeGraph g, out double cost, encoded);
+                    cost = DecodeOutput(outputSentence, g, cost, encoded);
 
                     g.backward();
                     UpdateParameters();
                     ResetCoders();
-                    if (IterationDone != null)
-                    {
-                        IterationDone(this, new CostEventArg()
-                        {
-                            Cost = cost / OutputSentence.Count
-                            ,
-                            Iteration = ep
-                        });
-                    }
+
+                    // calc trained data
+                    model.Training.TrainedData = (ep * io.Input.Count) + itr + 1;
+                    OnProgress?.Invoke(new ProgressEventArgs(ep + 1, cost / outputSentence.Count, model.Training));
                 }
+
+                // update training data
+                model.Training.NextEpoch = ep + 1;
+                model.Training.LastTime = DateTime.Now;
             }
+
+            OnComplete?.Invoke(new CompleteEventArgs(model.Training));
         }
 
         public List<string> Predict(List<string> inputSentence)
