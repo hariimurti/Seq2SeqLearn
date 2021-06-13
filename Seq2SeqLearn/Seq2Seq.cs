@@ -3,6 +3,8 @@ using Seq2SeqLearn.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Seq2SeqLearn
 {
@@ -18,6 +20,7 @@ namespace Seq2SeqLearn
         private Dictionary<string, int> wordToIndex = new Dictionary<string, int>();
         private Dictionary<int, string> indexToWord = new Dictionary<int, string>();
         private List<string> vocab = new List<string>();
+        private CancellationTokenSource cts;
 
         // default values
         public int MaxPredictionWord = 100; // max length of generated sentences
@@ -28,6 +31,8 @@ namespace Seq2SeqLearn
 
         public event Action<ProgressEventArgs> OnProgress;
         public event Action<CompleteEventArgs> OnComplete;
+        public event Action<ResumeEventArgs> OnResume;
+        public event Action<StopEventArgs> OnStop;
 
         public Seq2Seq()
         {
@@ -82,7 +87,7 @@ namespace Seq2SeqLearn
             }
         }
 
-        public void Training(int trainingEpoch)
+        private void Training(int trainingEpoch, CancellationToken token)
         {
             if (io.Input == null || io.Output == null) throw new Exception("The data is not ready!");
             if (trainingEpoch < 1) throw new Exception("Training epoch must be greater than 0!");
@@ -96,8 +101,13 @@ namespace Seq2SeqLearn
             model.Training.TotalEpoch = trainingEpoch;
             model.Training.TotalData = trainingEpoch * io.Input.Count;
 
+            // send resume event
+            if (model.Training.TrainedData > 0) OnResume?.Invoke(new ResumeEventArgs(model.Training));
+            
             for (int ep = 0; ep < trainingEpoch; ep++)
             {
+                if (ep < model.Training.NextEpoch) continue;
+
                 Random r = new Random();
                 for (int itr = 0; itr < io.Input.Count; itr++)
                 {
@@ -113,14 +123,53 @@ namespace Seq2SeqLearn
                     // calc trained data
                     model.Training.TrainedData = (ep * io.Input.Count) + itr + 1;
                     OnProgress?.Invoke(new ProgressEventArgs(ep + 1, cost / outputSentence.Count, model.Training));
+
+                    // break if cancelled
+                    if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
                 }
 
                 // update training data
                 model.Training.NextEpoch = ep + 1;
                 model.Training.LastTime = DateTime.Now;
+
+                // save data
+                binModel.Write(model);
+                if (!binIO.IsExist()) binIO.Write(io);
+
+                // break if cancelled
+                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
             }
 
             OnComplete?.Invoke(new CompleteEventArgs(model.Training));
+        }
+
+        public async void StartTraining(int trainingEpoch)
+        {
+            if (cts != null) return;
+
+            try
+            {
+                cts = new CancellationTokenSource();
+                await Task.Run(() => Training(trainingEpoch, cts.Token));
+            }
+            catch (OperationCanceledException e)
+            {
+                OnStop?.Invoke(new StopEventArgs(model.Training, e.Message, false));
+            }
+            catch (Exception e)
+            {
+                OnStop?.Invoke(new StopEventArgs(model.Training, e.Message, true));
+            }
+            finally
+            {
+                cts.Dispose();
+                cts = null;
+            }
+        }
+
+        public void StopTraining()
+        {
+            cts?.Cancel();
         }
 
         public List<string> Predict(List<string> inputSentence)
@@ -320,15 +369,6 @@ namespace Seq2SeqLearn
             model.encoder.Reset();
             model.reversEncoder.Reset();
             model.decoder.Reset();
-        }
-
-        public void Save()
-        {
-            var binIO = new FileBinary("Seq2SeqIO.bin");
-            binIO.Write(io);
-
-            var binModel = new FileBinary("Seq2SeqModel.bin");
-            binModel.Write(model);
         }
     }
 }
