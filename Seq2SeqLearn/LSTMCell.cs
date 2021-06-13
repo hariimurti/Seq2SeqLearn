@@ -111,25 +111,21 @@ namespace Seq2SeqLearn
         {
             List<WeightMatrix> response = new List<WeightMatrix>();
 
+            response.Add(this.Wch);
+            response.Add(this.Wcx);
             response.Add(this.bc);
 
+            response.Add(this.Wfh);
+            response.Add(this.Wfx);
             response.Add(this.bf);
 
-            response.Add(this.bi);
-
-            response.Add(this.bo);
-
-            response.Add(this.Wch);
-
-            response.Add(this.Wcx);
-
-            response.Add(this.Wfh);
-
-            response.Add(this.Wfx);
             response.Add(this.Wih);
             response.Add(this.Wix);
+            response.Add(this.bi);
+
             response.Add(this.Woh);
             response.Add(this.Wox);
+            response.Add(this.bo);
 
             return response;
         }
