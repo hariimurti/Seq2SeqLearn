@@ -40,6 +40,11 @@ namespace Seq2SeqLearn.Tools
             }
         }
 
+        public bool IsExist()
+        {
+            return File.Exists(filepath);
+        }
+
         public bool Delete()
         {
             try
