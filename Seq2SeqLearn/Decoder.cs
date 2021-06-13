@@ -6,10 +6,10 @@ namespace Seq2SeqLearn
     [Serializable]
     public class Decoder
     {
-        public List<LSTMCell> decoders = new List<LSTMCell>();
-        public int hdim { get; set; }
-        public int dim { get; set; }
-        public int depth { get; set; }
+        private List<LSTMCell> decoders = new List<LSTMCell>();
+        private int hdim { get; set; }
+        private int dim { get; set; }
+        private int depth { get; set; }
 
         public Decoder(int hdim, int dim, int depth)
         {

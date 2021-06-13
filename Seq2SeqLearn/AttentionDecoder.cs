@@ -7,11 +7,11 @@ namespace Seq2SeqLearn
     [Serializable]
     public class AttentionDecoder
     {
-        public List<LSTMAttentionDecoderCell> decoders = new List<LSTMAttentionDecoderCell>();
-        public int hdim { get; set; }
-        public int dim { get; set; }
-        public int depth { get; set; }
-        public AttentionUnit Attention { get; set; }
+        private List<LSTMAttentionDecoderCell> decoders = new List<LSTMAttentionDecoderCell>();
+        private int hdim { get; set; }
+        private int dim { get; set; }
+        private int depth { get; set; }
+        private AttentionUnit Attention { get; set; }
 
         public AttentionDecoder(int hdim, int dim, int depth)
         {

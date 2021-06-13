@@ -16,14 +16,14 @@ namespace Seq2SeqLearn
 
         public event EventHandler IterationDone;
 
-        public Dictionary<string, int> wordToIndex = new Dictionary<string, int>();
-        public Dictionary<int, string> indexToWord = new Dictionary<int, string>();
-        public List<string> vocab = new List<string>();
-        public List<List<string>> InputSequences;
-        public List<List<string>> OutputSequences;
+        private Dictionary<string, int> wordToIndex = new Dictionary<string, int>();
+        private Dictionary<int, string> indexToWord = new Dictionary<int, string>();
+        private List<string> vocab = new List<string>();
+        private List<List<string>> InputSequences;
+        private List<List<string>> OutputSequences;
 
-        public Optimizer solver;
-        public ModelAttentionData model = new ModelAttentionData();
+        private Optimizer solver;
+        private ModelAttentionData model = new ModelAttentionData();
 
         public Seq2Seq(int inputSize, int hiddenSize, int depth, List<List<string>> input, List<List<string>> output, bool useDropout)
         {

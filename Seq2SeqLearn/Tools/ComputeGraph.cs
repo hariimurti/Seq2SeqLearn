@@ -8,7 +8,7 @@ namespace Seq2SeqLearn
     {
         private List<Action> backprop = new List<Action>();
 
-        public bool needs_backprop { get; set; }
+        private bool needs_backprop { get; set; }
 
         public ComputeGraph(bool needBack = true)
         {
