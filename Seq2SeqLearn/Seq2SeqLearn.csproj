@@ -12,6 +12,19 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <ShouldCreateLogs>True</ShouldCreateLogs>
+    <AdvancedSettingsExpanded>False</AdvancedSettingsExpanded>
+    <UpdateAssemblyVersion>True</UpdateAssemblyVersion>
+    <UpdateAssemblyFileVersion>True</UpdateAssemblyFileVersion>
+    <UpdateAssemblyInfoVersion>True</UpdateAssemblyInfoVersion>
+    <AssemblyVersionSettings>None.None.None.None</AssemblyVersionSettings>
+    <UpdatePackageVersion>False</UpdatePackageVersion>
+    <AssemblyInfoVersionType>SettingsVersion</AssemblyInfoVersionType>
+    <InheritWinAppVersionFrom>None</InheritWinAppVersionFrom>
+    <AssemblyFileVersionSettings>None.None.None.None</AssemblyFileVersionSettings>
+    <AssemblyInfoVersionSettings>None.None.None.None</AssemblyInfoVersionSettings>
+    <AssemblyInfoVersionSemVerSettings>
+    </AssemblyInfoVersionSemVerSettings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,13 +53,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContextSeq2Seq.cs" />
     <Compile Include="AttentionUnit.cs" />
     <Compile Include="AttentionDecoder.cs" />
     <Compile Include="Decoder.cs" />
-    <Compile Include="ContextDecoder.cs" />
-    <Compile Include="LSTMContextDecoderCell.cs" />
-    <Compile Include="AttentionSeq2Seq.cs" />
+    <Compile Include="Seq2Seq.cs" />
     <Compile Include="CostEventArg.cs" />
     <Compile Include="Encoder.cs" />
     <Compile Include="LSTMCell.cs" />

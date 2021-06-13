@@ -6,7 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Seq2SeqLearn
 {
-    public class ContextSeq2Seq
+    public class Seq2Seq
     {
         public event EventHandler IterationDone;
 
@@ -28,7 +28,7 @@ namespace Seq2SeqLearn
         public WeightMatrix Embedding;
         public Encoder encoder;
         public Encoder ReversEncoder;
-        public ContextDecoder decoder;
+        public AttentionDecoder decoder;
 
         public bool UseDropout { get; set; }
 
@@ -37,7 +37,7 @@ namespace Seq2SeqLearn
         public WeightMatrix bd { get; set; }
         public int Depth { get; set; }
 
-        public ContextSeq2Seq(int inputSize, int hiddenSize, int depth, List<List<string>> input, List<List<string>> output, bool useDropout)
+        public Seq2Seq(int inputSize, int hiddenSize, int depth, List<List<string>> input, List<List<string>> output, bool useDropout)
         {
             this.InputSequences = input;
             this.OutputSequences = output;
@@ -58,7 +58,7 @@ namespace Seq2SeqLearn
             encoder = new Encoder(hidden_size, word_size, depth);
             ReversEncoder = new Encoder(hidden_size, word_size, depth);
 
-            decoder = new ContextDecoder(hidden_size, word_size, depth);
+            decoder = new AttentionDecoder(hidden_size, word_size, depth);
         }
 
         private void OneHotEncoding(List<List<string>> _input, List<List<string>> _output)
@@ -163,7 +163,7 @@ namespace Seq2SeqLearn
             int ix_input = 1;
             for (int i = 0; i < OutputSentence.Count + 1; i++)
             {
-                int ix_target = 0;
+                int ix_target;
                 if (i == OutputSentence.Count)
                 {
                     ix_target = 0;
@@ -174,7 +174,7 @@ namespace Seq2SeqLearn
                 }
 
                 var x = g.PeekRow(Embedding, ix_input);
-                var eOutput = decoder.Decode(x, encoded.LastOrDefault(), g);
+                var eOutput = decoder.Decode(x, encoded, g);
                 if (UseDropout)
                 {
                     eOutput = g.Dropout(eOutput, 0.2);
@@ -246,7 +246,7 @@ namespace Seq2SeqLearn
             while (true)
             {
                 var x = G2.PeekRow(Embedding, ix_input);
-                var eOutput = decoder.Decode(x, encoded.LastOrDefault(), G2);
+                var eOutput = decoder.Decode(x, encoded, G2);
                 if (UseDropout)
                 {
                     for (int i = 0; i < eOutput.Weight.Length; i++)
@@ -289,7 +289,7 @@ namespace Seq2SeqLearn
 
         public void Save()
         {
-            ModelContextData tosave = new ModelContextData();
+            ModelAttentionData tosave = new ModelAttentionData();
             tosave.bd = this.bd;
             tosave.clipval = this.clipval;
             tosave.decoder = this.decoder;
@@ -314,10 +314,10 @@ namespace Seq2SeqLearn
 
         public void Load()
         {
-            ModelContextData tosave = new ModelContextData();
+            ModelAttentionData tosave = new ModelAttentionData();
             BinaryFormatter bf = new BinaryFormatter();
             FileStream fs = new FileStream("Model.bin", FileMode.Open, FileAccess.Read);
-            tosave = bf.Deserialize(fs) as ModelContextData;
+            tosave = bf.Deserialize(fs) as ModelAttentionData;
             fs.Close();
             fs.Dispose();
 
@@ -339,7 +339,7 @@ namespace Seq2SeqLearn
     }
 
     [Serializable]
-    public class ModelContextData
+    public class ModelAttentionData
     {
         public int max_chars_gen = 100; // max length of generated sentences
         public int hidden_sizes;
@@ -347,13 +347,14 @@ namespace Seq2SeqLearn
 
         // optimization
         public double regc = 0.000001; // L2 regularization strength
+
         public double learning_rate = 0.01; // learning rate
         public double clipval = 5.0; // clip gradients at this value
 
         public WeightMatrix Wil;
         public Encoder encoder;
         public Encoder ReversEncoder;
-        public ContextDecoder decoder;
+        public AttentionDecoder decoder;
         public bool UseDropout { get; set; }
 
         //Output Layer Weights
